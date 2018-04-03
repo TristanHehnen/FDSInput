@@ -1,0 +1,47 @@
+
+&HEAD CHID='#chid#' /
+&TIME T_END=#tend# /
+&DUMP NFRAMES=#nframes#, DT_RESTART=#restart# /
+
+
+################
+### Reaction ###
+################
+
+#reaction#
+
+
+
+################
+### Surfaces ###
+################
+
+#surfaces#
+
+
+
+#################
+### Materials ###
+#################
+
+#materials#
+
+
+
+################
+### Geometry ###
+################
+
+#geometry#
+
+
+
+#######################
+### Collecting Data ###
+#######################
+
+#datacollection#
+
+
+
+&TAIL /
