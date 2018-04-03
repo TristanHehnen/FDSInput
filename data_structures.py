@@ -16,6 +16,10 @@ class FDSObjects:
 #################
 # FDS MESH CLASS
 class FDSMesh:
+    """
+    Container class for FDS objects, like obstructions, vents, devices, ...
+    """
+
     def __init__(self, loc_x=None, loc_y=None, loc_z=None,
                  len_x=None, len_y=None, len_z=None,
                  len_x1=None, len_x2=None,
@@ -62,6 +66,10 @@ class FDSMesh:
 #################
 # FDS DOMAIN CLASS
 class FDSDomain:
+    """
+    Container class for meshes.
+    """
+
     def __init__(self,
                  loc_x=None, loc_y=None, loc_z=None,
                  len_x=None, len_y=None, len_z=None,
@@ -80,8 +88,10 @@ class FDSDomain:
 #################
 # BOX SHAPE CLASS
 class BoxShape:
+
     def __init__(self, box_x1=0.0, box_y1=0.0, box_z1=0.0, box_x2=1.0,
                  box_y2=1.0, box_z2=1.0):
+
         self.box_x1 = box_x1
         self.box_x2 = box_x2
         self.box_y1 = box_y1
@@ -104,6 +114,8 @@ class Surf:
 
     def get_surf(self):
         if self.surf_id is 'id':
+            surf = "SURF_ID='INERT'"
+        else:
             surf = "SURF_ID='INERT'"
         return surf
 
