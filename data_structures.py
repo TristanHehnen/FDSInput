@@ -88,6 +88,9 @@ class FDSDomain:
 #################
 # BOX SHAPE CLASS
 class BoxShape:
+    """
+    Provide the basic box shape for FDS entities.
+    """
 
     def __init__(self, box_x1=0.0, box_y1=0.0, box_z1=0.0, box_x2=1.0,
                  box_y2=1.0, box_z2=1.0):
@@ -109,6 +112,9 @@ class BoxShape:
 #################
 # SURFACE CLASS
 class Surf:
+    """
+    Container for surface information of obstructions in FDS.
+    """
     def __init__(self, surf_id='id'):
         self.surf_id = surf_id
 
@@ -123,6 +129,9 @@ class Surf:
 #################
 # OBSTRUCTION CLASS
 class Obst:
+    """
+    Set size and position of an obstruction in FDS.
+    """
     def __init__(self, pos_x=0.0, pos_y=0.0, pos_z=0.0,
                  len_x=1.0, len_y=1.0, len_z=1.0):
 
