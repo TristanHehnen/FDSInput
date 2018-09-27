@@ -234,6 +234,7 @@ def fds_lollipop_tree(x_loc, y_loc, z_loc, dx, h_trunk=2.0, r_leafs=3.0,
 
     return tree
 
+
 def write_fds_input(file_name, box_coord):
     """
 

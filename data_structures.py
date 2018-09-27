@@ -171,6 +171,152 @@ class Obst:
         return obst
 
 
+#################
+# MATERIAL CLASS
+class FDSMATL:
+    matl_temp = {'init': "&MATL ID = '{}'",
+                 'density': "DENSITY = {}",
+                 'emissivity': "EMISSIVITY = {}",
+                 'conductivity': "CONDUCTIVITY = {}",
+                 'specific_heat': "SPECIFIC_HEAT = {}",
+                 'n_reactions': "N_REACTIONS = {}",
+                 'a': "A({}) = {}",
+                 'e': "E({}) = {}",
+                 'n_s': "N_S({}) = {}",
+                 'nu_matl': "NU_MATL({},{}) = {}",
+                 'matl_id': "MATL_ID({},{}) = '{}'",
+                 'nu_spec': "NU_SPEC({},{}) = {}",
+                 'spec_id': "SPEC_ID({},{}) = '{}'",
+                 'heat_of_comb': "HEAT_OF_COMBUSTION({}) = {}",
+                 'heat_of_reac': "HEAT_OF_REACTION({}) = {}"}
+
+    def __init__(self, init, density=None, emissivity=None,
+                 conductivity=None, specific_heat=None,
+                 n_reactions=None, a=None, e=None, n_s=None,
+                 nu_matl=None, matl_id=None, nu_spec=None,
+                 spec_id=None, heat_of_comb=None,
+                 heat_of_reac=None):
+
+        self.init = init
+        self.density = density
+        self.emissivity = emissivity
+        self.conductivity = conductivity
+        self.specific_heat = specific_heat
+        self.n_reactions = n_reactions
+        self.a = a
+        self.e = e
+        self.n_s = n_s
+        self.nu_matl = nu_matl
+        self.matl_id = matl_id
+        self.nu_spec = nu_spec
+        self.spec_id = spec_id
+        self.heat_of_comb = heat_of_comb
+        self.heat_of_reac = heat_of_reac
+
+        self.mp = {'init': self.init,
+                   'density': self.density,
+                   'emissivity': emissivity}
+
+        self.reactions = []
+
+        # Attempt to handle cases with only one reaction.
+        self.reac_param_base = [self.a, self.e, self.n_s,
+                                self.nu_matl, self.matl_id, self.nu_spec,
+                                self.spec_id, self.heat_of_comb,
+                                self.heat_of_reac]
+        for i in self.reac_param_base:
+            if i is not None:
+                self.add_reaction(self.a, self.e, self.n_s,
+                                  self.nu_matl, self.matl_id, self.nu_spec,
+                                  self.spec_id, self.heat_of_comb,
+                                  self.heat_of_reac)
+                break
+
+    def add_reaction(self, a=None, e=None, n_s=None,
+                     nu_matl=None, matl_id=None, nu_spec=None,
+                     spec_id=None, heat_of_comb=None,
+                     heat_of_reac=None):
+
+        self.a = a
+        self.e = e
+        self.n_s = n_s
+        self.nu_matl = nu_matl
+        self.matl_id = matl_id
+        self.nu_spec = nu_spec
+        self.spec_id = spec_id
+        self.heat_of_comb = heat_of_comb
+        self.heat_of_reac = heat_of_reac
+
+        new_reac = {'a': self.a,
+                    'e': self.e,
+                    'nu_matl': self.nu_matl,
+                    'matl_id': self.matl_id,
+                    'nu_spec': self.nu_spec,
+                    'spec_id': self.spec_id,
+                    'heat_of_comb': self.heat_of_comb,
+                    'heat_of_reac': self.heat_of_reac}
+
+        self.reactions.append(new_reac)
+
+    def compile_matl(self, show=False):
+        matl_lines = []
+
+        for component in self.mp:
+            idfr = '{}'.format(component)
+
+            if self.mp[idfr] is not None:
+                comp = self.matl_temp[idfr]
+                if component is not 'init':
+                    comp = '      ' + comp
+
+                new_c = comp.format(self.mp[idfr]) + ','
+                # print(new_c)
+                matl_lines.append(new_c)
+
+        matl_lines[-1] = matl_lines[-1][:-1] + ' /'
+
+        if show is True:
+            for line in matl_lines:
+                print(line)
+
+        return matl_lines
+
+    def show_reactions(self):
+
+        string_temp = "  {}: {}\n"
+        reac_out = '\n' \
+                   '* Reactions overview:\n' \
+                   '  Total: {} reaction(s)\n'.format(len(self.reactions))
+
+        for i in range(len(self.reactions)):
+            reac_out += '\n' \
+                        '* Reaction: {}\n' \
+                        '  Parameter: value\n' \
+                        '------------------\n'.format(i + 1)
+
+            for j in self.reactions[i]:
+                reac_out += string_temp.format(j, self.reactions[i][
+                    '{}'.format(j)])
+
+        reac_out += '------------------\n\n'
+        print(reac_out)
+
+    def __str__(self):
+        """
+        Provide overview over the parameters and values
+        stored within this objects instance.
+        """
+
+        string_temp = "  {}: {}\n"
+        output = '* Parameter: value\n' \
+                 '------------------\n'
+        for i in self.mp:
+            output += string_temp.format(i, self.mp['{}'.format(i)])
+
+        output += '------------------\n\n'
+        return output
+
+
 def test_boxshape():
     bx1 = BoxShape(0.0, 0.0, 0.0, 5.0, 2.0, 3.0)
     print(bx1.get_box())
