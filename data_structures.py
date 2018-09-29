@@ -172,6 +172,135 @@ class Obst:
 
 
 #################
+# SURFACE CLASS
+class FDSSURF:
+    surf_temp = {'init': "&SURF ID = '{}'",
+                 'ext_flux': "EXTERNAL_FLUX = {}",
+                 'rgb': "RGB = {}",
+                 'tga_analysis': "TGA_ANALYSIS = .{}.",
+                 'tga_heat_rate': "TGA_HEATING_RATE = {}",
+                 'tga_fin_temp': "TGA_FINAL_TEMPERATURE = {}",
+                 'backing': "BACKING = '{}'",
+                 'cell_size_fac': "CELL_SIZE_FACTOR = {}",
+                 'burn_away': "BURN_AWAY = .{}.",
+                 'layer_div': "LAYER_DIVIDE = {}",
+                 'thickness': "THICKNESS({}) = {}",
+                 'matl_id': "MATL_ID({}) = '{}'",
+                 'matl_mass_frac': "MATL_MASS_FRACTION({}) = '{}'", }
+
+    def __init__(self, init, ext_flux=None, rgb=None,
+                 tga_analysis=None, tga_heat_rate=None,
+                 tga_fin_temp=None, backing=None,
+                 cell_size_fac=None, burn_away=None,
+                 layer_div=None, thickness=None, matl_id=None,
+                 matl_mass_frac=None, ):
+
+        self.init = init
+        self.ext_flux = ext_flux
+        self.rgb = rgb
+        self.tga_analysis = tga_analysis
+        self.tga_heat_rate = tga_heat_rate
+        self.tga_fin_temp = tga_fin_temp
+        self.backing = backing
+        self.cell_size_fac = cell_size_fac
+        self.burn_away = burn_away
+        self.layer_div = layer_div
+        self.thickness = thickness
+        self.matl_id = matl_id
+        self.matl_mass_frac = matl_mass_frac
+
+        self.param_base = [['init', self.init],
+                           ['ext_flux', self.ext_flux],
+                           ['rgb', self.rgb],
+                           ['tga_analysis', self.tga_analysis],
+                           ['tga_heat_rate', self.tga_heat_rate],
+                           ['tga_fin_temp', self.tga_fin_temp],
+                           ['backing', self.backing],
+                           ['cell_size_fac', self.cell_size_fac],
+                           ['burn_away', self.burn_away],
+                           ['layer_div', self.layer_div]]
+
+        self.param_base_dict = {'init': self.init,
+                                'ext_flux': self.ext_flux,
+                                'rgb': self.rgb,
+                                'tga_analysis': self.tga_analysis,
+                                'tga_heat_rate': self.tga_heat_rate,
+                                'tga_fin_temp': self.tga_fin_temp,
+                                'backing': self.backing,
+                                'cell_size_fac': self.cell_size_fac,
+                                'burn_away': self.burn_away,
+                                'layer_div': self.layer_div}
+
+        self.materials = []
+
+        # Attempt to handle cases with only one material.
+        self.matl_param_base = [['thickness', self.thickness],
+                                ['matl_id', self.matl_id],
+                                ['matl_mass_frac', self.matl_mass_frac]]
+
+        for i in self.matl_param_base:
+            if i is not None:
+                self.add_material(self.thickness,
+                                  self.matl_id,
+                                  self.matl_mass_frac)
+                break
+
+    def add_material(self,
+                     thickness=None,
+                     matl_id=None,
+                     matl_mass_frac=None):
+
+        self.thickness = thickness
+        self.matl_id = matl_id
+        self.matl_mass_frac = matl_mass_frac
+
+        new_matl = {'thickness': self.thickness,
+                    'matl_id': self.matl_id,
+                    'matl_mass_frac': self.matl_mass_frac}
+
+        self.materials.append(new_matl)
+
+    def compile_surf(self, show=False):
+        surf_lines = []
+        num_matl = len(self.materials)
+        print(self.materials)
+        matl_count = 1
+
+        for component in self.param_base[:]:
+            idfr = '{}'.format(component[0])
+
+            if self.param_base_dict[idfr] is not None:
+                comp = self.surf_temp[idfr]
+                if component[0] is not 'init':
+                    comp = '      ' + comp
+
+                new_c = comp.format(self.param_base_dict[idfr])
+                # print(new_c)
+                surf_lines.append(new_c + ',')
+
+        # Add different materials.
+        for matl_dict in self.materials:
+
+            for matl_para in self.matl_param_base:
+                idfr = '{}'.format(matl_para[0])
+
+                if matl_dict[idfr] is not None:
+                    new_c = "      " + self.surf_temp[idfr].format(matl_count,
+                                                                   matl_dict[
+                                                                       idfr])
+                    surf_lines.append(new_c + ',')
+            matl_count += 1
+
+        surf_lines[-1] = surf_lines[-1][:-1] + ' /\n'
+
+        if show is True:
+            for line in surf_lines:
+                print(line)
+
+        return surf_lines
+
+
+#################
 # MATERIAL CLASS
 class FDSMATL:
     matl_temp = {'init': "&MATL ID = '{}'",
