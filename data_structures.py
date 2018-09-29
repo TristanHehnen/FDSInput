@@ -312,26 +312,25 @@ class FDSMATL:
                  'a': "A({}) = {}",
                  'e': "E({}) = {}",
                  'n_s': "N_S({}) = {}",
-                 'nu_matl': "NU_MATL({},{}) = {}",
-                 'matl_id': "MATL_ID({},{}) = '{}'",
-                 'nu_spec': "NU_SPEC({},{}) = {}",
-                 'spec_id': "SPEC_ID({},{}) = '{}'",
+                 'nu_matl': "NU_MATL({}) = {}",
+                 'matl_id': "MATL_ID({}) = '{}'",
+                 'nu_spec': "NU_SPEC({}) = {}",
+                 'spec_id': "SPEC_ID({}) = '{}'",
                  'heat_of_comb': "HEAT_OF_COMBUSTION({}) = {}",
                  'heat_of_reac': "HEAT_OF_REACTION({}) = {}"}
 
     def __init__(self, init, density=None, emissivity=None,
                  conductivity=None, specific_heat=None,
-                 n_reactions=None, a=None, e=None, n_s=None,
-                 nu_matl=None, matl_id=None, nu_spec=None,
-                 spec_id=None, heat_of_comb=None,
-                 heat_of_reac=None):
+                 a=None, e=None, n_s=None, nu_matl=None,
+                 matl_id=None, nu_spec=None, spec_id=None,
+                 heat_of_comb=None, heat_of_reac=None):
 
         self.init = init
         self.density = density
         self.emissivity = emissivity
         self.conductivity = conductivity
         self.specific_heat = specific_heat
-        self.n_reactions = n_reactions
+        self.n_reactions = None
         self.a = a
         self.e = e
         self.n_s = n_s
@@ -342,13 +341,34 @@ class FDSMATL:
         self.heat_of_comb = heat_of_comb
         self.heat_of_reac = heat_of_reac
 
-        self.mp = {'init': self.init,
-                   'density': self.density,
-                   'emissivity': emissivity}
+        self.param_base = [['init', self.init],
+                           ['emissivity', self.emissivity],
+                           ['density', self.density],
+                           ['conductivity', self.conductivity],
+                           ['specific_heat', self.specific_heat]]  # ,
+        # ['heat_of_comb', self.heat_of_comb],
+        # ['heat_of_reac', self.heat_of_reac]]
+
+        self.param_base_dict = {'init': self.init,
+                                'emissivity': self.emissivity,
+                                'density': self.density,
+                                'conductivity': self.conductivity,
+                                'specific_heat': self.specific_heat}  # ,
+        # 'heat_of_comb': self.heat_of_comb,
+        # 'heat_of_reac': self.heat_of_reac}
 
         self.reactions = []
 
         # Attempt to handle cases with only one reaction.
+        self.reac_param_base2 = [['a', self.a],
+                                 ['e', self.e],
+                                 ['n_s', self.n_s],
+                                 ['nu_matl', self.nu_matl],
+                                 ['matl_id', self.matl_id],
+                                 ['nu_spec', self.nu_spec],
+                                 ['spec_id', self.spec_id],
+                                 ['heat_of_comb', self.heat_of_comb],
+                                 ['heat_of_reac', self.heat_of_reac]]
         self.reac_param_base = [self.a, self.e, self.n_s,
                                 self.nu_matl, self.matl_id, self.nu_spec,
                                 self.spec_id, self.heat_of_comb,
@@ -378,6 +398,7 @@ class FDSMATL:
 
         new_reac = {'a': self.a,
                     'e': self.e,
+                    'n_s': self.n_s,
                     'nu_matl': self.nu_matl,
                     'matl_id': self.matl_id,
                     'nu_spec': self.nu_spec,
@@ -389,26 +410,84 @@ class FDSMATL:
 
     def compile_matl(self, show=False):
         matl_lines = []
+        num_reac = len(self.reactions)
+        reac_count = 1
 
-        for component in self.mp:
-            idfr = '{}'.format(component)
+        for component in self.param_base[:]:
+            idfr = '{}'.format(component[0])
 
-            if self.mp[idfr] is not None:
+            if self.param_base_dict[idfr] is not None:
                 comp = self.matl_temp[idfr]
-                if component is not 'init':
+                if component[0] is not 'init':
                     comp = '      ' + comp
 
-                new_c = comp.format(self.mp[idfr]) + ','
+                new_c = comp.format(self.param_base_dict[idfr])
                 # print(new_c)
-                matl_lines.append(new_c)
+                matl_lines.append(new_c + ',')
 
-        matl_lines[-1] = matl_lines[-1][:-1] + ' /'
+        if num_reac is not 0:
+            # print('no reac')
+            new_c = "      " + self.matl_temp['n_reactions'].format(num_reac)
+            matl_lines.append(new_c + ',')
+
+        for reac_dict in self.reactions:
+
+            for reac_para in self.reac_param_base2:
+                idfr = '{}'.format(reac_para[0])
+
+                if reac_dict[idfr] is not None:
+                    new_c = "      " + self.matl_temp[idfr].format(reac_count,
+                                                                   reac_dict[
+                                                                       idfr])
+                    matl_lines.append(new_c + ',')
+            reac_count += 1
+
+        # #         for component in self.param_base[-2:]:
+        # #             idfr = '{}'.format(component[0])
+
+        #             if self.param_base_dict[idfr] is not None:
+        #                 comp = self.matl_temp[idfr]
+        #                 if component[0] is not 'init':
+        #                     comp = '      ' + comp
+
+        #                 new_c = comp.format(reac_count,
+        #                                     self.param_base_dict[idfr])
+        #                 #print(new_c)
+        #                 matl_lines.append(new_c + ',')
+
+        #         new_c = "      " + self.matl_temp['n_reactions'].format(num_reac)
+        #         matl_lines.append(new_c + ',')
+
+        matl_lines[-1] = matl_lines[-1][:-1] + ' /\n'
 
         if show is True:
             for line in matl_lines:
                 print(line)
 
         return matl_lines
+
+    #     def compile_matl(self, show=False):
+    #         matl_lines = []
+
+    #         for component in self.mp:
+    #             idfr = '{}'.format(component)
+
+    #             if self.mp[idfr] is not None:
+    #                 comp = self.matl_temp[idfr]
+    #                 if component is not 'init':
+    #                     comp = '      ' + comp
+
+    #                 new_c = comp.format(self.mp[idfr])+','
+    #                 #print(new_c)
+    #                 matl_lines.append(new_c)
+
+    #         matl_lines[-1] = matl_lines[-1][:-1] + ' /'
+
+    #         if show is True:
+    #             for line in matl_lines:
+    #                 print(line)
+
+    #         return matl_lines
 
     def show_reactions(self):
 
@@ -432,15 +511,16 @@ class FDSMATL:
 
     def __str__(self):
         """
-        Provide overview over the parameters and values
-        stored within this objects instance.
+        Provide complete overview over the parameters and
+        values stored within this objects instance.
         """
 
         string_temp = "  {}: {}\n"
         output = '* Parameter: value\n' \
                  '------------------\n'
-        for i in self.mp:
-            output += string_temp.format(i, self.mp['{}'.format(i)])
+        for i in self.param_base_dict:
+            output += string_temp.format(i,
+                                         self.param_base_dict['{}'.format(i)])
 
         output += '------------------\n\n'
         return output
