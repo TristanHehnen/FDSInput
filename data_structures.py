@@ -185,8 +185,8 @@ class FDSSURF:
                  'burn_away': "BURN_AWAY = .{}.",
                  'layer_div': "LAYER_DIVIDE = {}",
                  'thickness': "THICKNESS({}) = {}",
-                 'matl_id': "MATL_ID({}) = '{}'",
-                 'matl_mass_frac': "MATL_MASS_FRACTION({}) = '{}'", }
+                 'matl_id': "MATL_ID({}) = {}",
+                 'matl_mass_frac': "MATL_MASS_FRACTION({}) = {}", }
 
     def __init__(self, init, ext_flux=None, rgb=None,
                  tga_analysis=None, tga_heat_rate=None,
@@ -218,7 +218,10 @@ class FDSSURF:
                            ['backing', self.backing],
                            ['cell_size_fac', self.cell_size_fac],
                            ['burn_away', self.burn_away],
-                           ['layer_div', self.layer_div]]
+                           ['layer_div', self.layer_div]]  # ,
+        # ['thickness', self.thickness],
+        # ['matl_id', self.matl_id],
+        # ['matl_mass_frac', self.matl_mass_frac],]
 
         self.param_base_dict = {'init': self.init,
                                 'ext_flux': self.ext_flux,
@@ -229,7 +232,10 @@ class FDSSURF:
                                 'backing': self.backing,
                                 'cell_size_fac': self.cell_size_fac,
                                 'burn_away': self.burn_away,
-                                'layer_div': self.layer_div}
+                                'layer_div': self.layer_div}  # ,
+        # 'thickness': self.thickness,
+        # 'matl_id': self.matl_id,
+        # 'matl_mass_frac': self.matl_mass_frac,}
 
         self.materials = []
 
@@ -239,7 +245,7 @@ class FDSSURF:
                                 ['matl_mass_frac', self.matl_mass_frac]]
 
         for i in self.matl_param_base:
-            if i is not None:
+            if i[1] is not None:
                 self.add_material(self.thickness,
                                   self.matl_id,
                                   self.matl_mass_frac)
@@ -278,21 +284,74 @@ class FDSSURF:
                 # print(new_c)
                 surf_lines.append(new_c + ',')
 
+        thick_comp = "{}, "
+        id_list = []
+        mass_frac_list = []
+        comp_id_temp = '{},{}:{}'
+        matl_comp_count = 1
+        thicknesses = ''
+
         # Add different materials.
         for matl_dict in self.materials:
+            print('len matl_dict', len(self.materials))
 
-            for matl_para in self.matl_param_base:
-                idfr = '{}'.format(matl_para[0])
+            # Check if material(s) are provided, by using the existance
+            # of thickness as an indicator.
+            idfr = 'thickness'
+            if matl_dict[idfr] is not None:
+                matl_ids = len(matl_dict['matl_id'])
 
-                if matl_dict[idfr] is not None:
-                    new_c = "      " + self.surf_temp[idfr].format(matl_count,
-                                                                   matl_dict[
-                                                                       idfr])
-                    surf_lines.append(new_c + ',')
-            matl_count += 1
+                # Determine the amount of materials and collect their
+                # thicknesses in a single string.
+                thick_num = '1:{}'.format(len(self.materials))
+                thicknesses += thick_comp.format(matl_dict[idfr])
 
+                # Collect the different material ids
+                # for a material components.
+                idfr = 'matl_id'
+                comp_id = comp_id_temp.format(matl_comp_count,
+                                              '1', matl_ids)
+                ml = ''
+                for md in matl_dict[idfr]:
+                    ml += "'{}', ".format(md)
+                ml = ml[:-2]
+                new_c = "      " + self.surf_temp[idfr].format(comp_id,
+                                                               ml)
+                id_list.append(new_c)
+
+                # Collect the different mass fractions
+                # for the material components.
+                idfr = 'matl_mass_frac'
+                comp_id = comp_id_temp.format(matl_comp_count,
+                                              '1', matl_ids)
+                mf = ''
+                for md in matl_dict[idfr]:
+                    mf += "'{}', ".format(md)
+                mf = mf[:-2]
+                new_c = "      " + self.surf_temp[idfr].format(comp_id,
+                                                               mf)
+                mass_frac_list.append(new_c)
+
+                matl_comp_count += 1
+
+        # Create the thickness input line.
+        new_thick = "      " + self.surf_temp['thickness'].format(thick_num,
+                                                                  thicknesses[
+                                                                  :-1])
+        surf_lines.append(new_thick)
+
+        # Append the various material id lines.
+        for m_id in id_list:
+            surf_lines.append(m_id + ',')
+
+        # Append the various material mass fraction lines.
+        for m_fr in mass_frac_list:
+            surf_lines.append(m_fr + ',')
+
+        # Remove the last comma.
         surf_lines[-1] = surf_lines[-1][:-1] + ' /\n'
 
+        # Print results to the screen, if desired.
         if show is True:
             for line in surf_lines:
                 print(line)
