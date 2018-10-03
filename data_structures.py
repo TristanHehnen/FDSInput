@@ -269,9 +269,9 @@ class FDSSURF:
     def compile_surf(self, show=False):
         surf_lines = []
         num_matl = len(self.materials)
-        print(self.materials)
         matl_count = 1
 
+        # Process the basic surface parameters.
         for component in self.param_base[:]:
             idfr = '{}'.format(component[0])
 
@@ -293,7 +293,7 @@ class FDSSURF:
 
         # Add different materials.
         for matl_dict in self.materials:
-            print('len matl_dict', len(self.materials))
+            #             print('len matl_dict',len(self.materials))
 
             # Check if material(s) are provided, by using the existance
             # of thickness as an indicator.
@@ -326,7 +326,7 @@ class FDSSURF:
                                               '1', matl_ids)
                 mf = ''
                 for md in matl_dict[idfr]:
-                    mf += "'{}', ".format(md)
+                    mf += "{}, ".format(md)
                 mf = mf[:-2]
                 new_c = "      " + self.surf_temp[idfr].format(comp_id,
                                                                mf)
@@ -419,21 +419,30 @@ class FDSMATL:
         self.reactions = []
 
         # Attempt to handle cases with only one reaction.
-        self.reac_param_base2 = [['a', self.a],
+        self.reac_param_base1 = [['a', self.a],
                                  ['e', self.e],
                                  ['n_s', self.n_s],
-                                 ['nu_matl', self.nu_matl],
-                                 ['matl_id', self.matl_id],
-                                 ['nu_spec', self.nu_spec],
-                                 ['spec_id', self.spec_id],
                                  ['heat_of_comb', self.heat_of_comb],
                                  ['heat_of_reac', self.heat_of_reac]]
-        self.reac_param_base = [self.a, self.e, self.n_s,
-                                self.nu_matl, self.matl_id, self.nu_spec,
-                                self.spec_id, self.heat_of_comb,
-                                self.heat_of_reac]
-        for i in self.reac_param_base:
-            if i is not None:
+
+        self.reac_param_base2 = [['nu_matl', self.nu_matl],
+                                 ['matl_id', self.matl_id],
+                                 ['nu_spec', self.nu_spec],
+                                 ['spec_id', self.spec_id]]
+
+        self.reac_param_base1_dict = {'a': self.a,
+                                      'e': self.e,
+                                      'n_s': self.n_s,
+                                      'heat_of_comb': self.heat_of_comb,
+                                      'heat_of_reac': self.heat_of_reac}
+
+        self.reac_param_base2_dict = {'nu_matl': self.nu_matl,
+                                      'matl_id': self.matl_id,
+                                      'nu_spec': self.nu_spec,
+                                      'spec_id': self.spec_id}
+
+        for i in self.reac_param_base1:
+            if i[1] is not None:
                 self.add_reaction(self.a, self.e, self.n_s,
                                   self.nu_matl, self.matl_id, self.nu_spec,
                                   self.spec_id, self.heat_of_comb,
@@ -455,23 +464,26 @@ class FDSMATL:
         self.heat_of_comb = heat_of_comb
         self.heat_of_reac = heat_of_reac
 
-        new_reac = {'a': self.a,
-                    'e': self.e,
-                    'n_s': self.n_s,
-                    'nu_matl': self.nu_matl,
-                    'matl_id': self.matl_id,
-                    'nu_spec': self.nu_spec,
-                    'spec_id': self.spec_id,
-                    'heat_of_comb': self.heat_of_comb,
-                    'heat_of_reac': self.heat_of_reac}
+        new_reac1 = {'a': self.a,
+                     'e': self.e,
+                     'n_s': self.n_s,
+                     'heat_of_comb': self.heat_of_comb,
+                     'heat_of_reac': self.heat_of_reac}
 
-        self.reactions.append(new_reac)
+        new_reac2 = {'nu_matl': self.nu_matl,
+                     'matl_id': self.matl_id,
+                     'nu_spec': self.nu_spec,
+                     'spec_id': self.spec_id}
+
+        self.reactions.append([new_reac1,
+                               new_reac2])
 
     def compile_matl(self, show=False):
         matl_lines = []
         num_reac = len(self.reactions)
         reac_count = 1
 
+        # Process the basic material parameters.
         for component in self.param_base[:]:
             idfr = '{}'.format(component[0])
 
@@ -485,37 +497,53 @@ class FDSMATL:
                 matl_lines.append(new_c + ',')
 
         if num_reac is not 0:
-            # print('no reac')
-            new_c = "      " + self.matl_temp['n_reactions'].format(num_reac)
+            idfr = 'n_reactions'
+            new_c = "      " + self.matl_temp[idfr].format(num_reac)
             matl_lines.append(new_c + ',')
 
-        for reac_dict in self.reactions:
+        for reac_list in self.reactions:
+            # Check if reaction information is provided.
+            if num_reac is not 0:
+                reac_ids = len(reac_list[0]['a'])
+                reac_num = '1:{}'.format(reac_ids)
 
-            for reac_para in self.reac_param_base2:
-                idfr = '{}'.format(reac_para[0])
+                # Build the first block of reaction input.
+                for idfr in self.reac_param_base1[:-2]:
 
-                if reac_dict[idfr] is not None:
-                    new_c = "      " + self.matl_temp[idfr].format(reac_count,
-                                                                   reac_dict[
-                                                                       idfr])
+                    para = ''
+                    for par in reac_list[0][idfr[0]]:
+                        para += "{}, ".format(par)
+                    para = para[:-2]
+                    new_c = "      " + self.matl_temp[idfr[0]].format(reac_num,
+                                                                      para)
                     matl_lines.append(new_c + ',')
-            reac_count += 1
 
-        # #         for component in self.param_base[-2:]:
-        # #             idfr = '{}'.format(component[0])
+                # Build the second block of reaction input.
+                # Contains information on material and species yields.
+                comp_id = '{},{}:{}'.format(reac_count,
+                                            '1', reac_ids)
+                for idfr in self.reac_param_base2:
 
-        #             if self.param_base_dict[idfr] is not None:
-        #                 comp = self.matl_temp[idfr]
-        #                 if component[0] is not 'init':
-        #                     comp = '      ' + comp
+                    para = ''
+                    # print(reac_list[1],reac_list[1][idfr[0]])
+                    for par in reac_list[1][idfr[0]]:
+                        para += "{}, ".format(par)
+                    para = para[:-2]
 
-        #                 new_c = comp.format(reac_count,
-        #                                     self.param_base_dict[idfr])
-        #                 #print(new_c)
-        #                 matl_lines.append(new_c + ',')
+                    new_c = "      " + self.matl_temp[idfr[0]].format(comp_id,
+                                                                      para)
+                    matl_lines.append(new_c + ',')
 
-        #         new_c = "      " + self.matl_temp['n_reactions'].format(num_reac)
-        #         matl_lines.append(new_c + ',')
+                # Build the third block of reaction input.
+                for idfr in self.reac_param_base1[-2:]:
+
+                    para = ''
+                    for par in reac_list[0][idfr[0]]:
+                        para += "{}, ".format(par)
+                    para = para[:-2]
+                    new_c = "      " + self.matl_temp[idfr[0]].format(reac_num,
+                                                                      para)
+                    matl_lines.append(new_c + ',')
 
         matl_lines[-1] = matl_lines[-1][:-1] + ' /\n'
 
@@ -524,29 +552,6 @@ class FDSMATL:
                 print(line)
 
         return matl_lines
-
-    #     def compile_matl(self, show=False):
-    #         matl_lines = []
-
-    #         for component in self.mp:
-    #             idfr = '{}'.format(component)
-
-    #             if self.mp[idfr] is not None:
-    #                 comp = self.matl_temp[idfr]
-    #                 if component is not 'init':
-    #                     comp = '      ' + comp
-
-    #                 new_c = comp.format(self.mp[idfr])+','
-    #                 #print(new_c)
-    #                 matl_lines.append(new_c)
-
-    #         matl_lines[-1] = matl_lines[-1][:-1] + ' /'
-
-    #         if show is True:
-    #             for line in matl_lines:
-    #                 print(line)
-
-    #         return matl_lines
 
     def show_reactions(self):
 
