@@ -231,7 +231,8 @@ class FDSBasicShapes:
         x2 = self.len_x + self.loc_x
         y2 = self.len_y + self.loc_y
         z2 = self.len_z + self.loc_z
-        coords = [x1, y1, z1, x2, y2, z2]
+        # coords = [x1, y1, z1, x2, y2, z2]
+        coords = [x1, x2, y1, y2, z1, z2]
 
         #
         nl = []
@@ -836,19 +837,19 @@ class FDSMATL:
         return output
 
 
-def test_boxshape():
-    bx1 = BoxShape(0.0, 0.0, 0.0, 5.0, 2.0, 3.0)
-    print(bx1.get_box())
-
-
-test_boxshape()
-
-
-# fm = FDSMesh(1.0, 2.0, 1.0)
-# print(fm.mesh())
-
-def test_obst():
-    obst1 = Obst(1, 1, 1)
-    print(obst1.get_obst())
-
-test_obst()
+# def test_boxshape():
+#     bx1 = BoxShape(0.0, 0.0, 0.0, 5.0, 2.0, 3.0)
+#     print(bx1.get_box())
+#
+#
+# test_boxshape()
+#
+#
+# # fm = FDSMesh(1.0, 2.0, 1.0)
+# # print(fm.mesh())
+#
+# def test_obst():
+#     obst1 = Obst(1, 1, 1)
+#     print(obst1.get_obst())
+#
+# test_obst()
