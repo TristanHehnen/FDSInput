@@ -13,54 +13,54 @@ class FDSObjects:
         m = '&MESH IJK={},{},{}, {}'.format()
 
 
-#################
-# FDS MESH CLASS
-class FDSMesh:
-    """
-    Container class for FDS objects, like obstructions, vents, devices, ...
-    """
-
-    def __init__(self, loc_x=None, loc_y=None, loc_z=None,
-                 len_x=None, len_y=None, len_z=None,
-                 len_x1=None, len_x2=None,
-                 len_y1=None, len_y2=None,
-                 len_z1=None, len_z2=None,):
-
-        self.loc_x = loc_x, self.loc_y = loc_y, self.loc_z = loc_z,
-        self.len_x = len_x, self.len_y = len_y, self.len_z = len_z,
-        self.len_x1 = len_x1, self.len_x2 = len_x2,
-        self.len_y1 = len_y1, self.len_y2 = len_y2,
-        self.len_z1 = len_z1, self.len_z2 = len_z2
-
-    def mesh(self):
-        # Initialise the location of the objects origin.
-        if self.loc_x is None:
-            self.loc_x = 0.0
-
-        if self.loc_y is None:
-            self.loc_y = 0.0
-        if self.loc_z is None:
-            self.loc_z = 0.0
-
-        # Set default size if none is provided.
-        if self.len_x is None:
-            self.len_x = 1.0
-        if self.len_y is None:
-            self.len_y = 1.0
-        if self.len_z is None:
-            self.len_z = 1.0
-
-        # Calculate objects dimensions, based on size and location.
-        x1 = self.len_x1 + self.loc_x
-        x2 = self.len_x2 + self.loc_x
-        y1 = self.len_y1 + self.loc_y
-        y2 = self.len_y2 + self.loc_y
-        z1 = self.len_z1 + self.loc_z
-        z2 = self.len_z2 + self.loc_z
-
-        bx1 = BoxShape(x1, x2, y1, y2, z1, z2)
-        m = '&MESH IJK={},{},{}, {}'.format(10, 10, 10, bx1)
-        print(m)
+# #################
+# # FDS MESH CLASS
+# class FDSMesh:
+#     """
+#     Container class for FDS objects, like obstructions, vents, devices, ...
+#     """
+#
+#     def __init__(self, loc_x=None, loc_y=None, loc_z=None,
+#                  len_x=None, len_y=None, len_z=None,
+#                  len_x1=None, len_x2=None,
+#                  len_y1=None, len_y2=None,
+#                  len_z1=None, len_z2=None,):
+#
+#         self.loc_x = loc_x, self.loc_y = loc_y, self.loc_z = loc_z,
+#         self.len_x = len_x, self.len_y = len_y, self.len_z = len_z,
+#         self.len_x1 = len_x1, self.len_x2 = len_x2,
+#         self.len_y1 = len_y1, self.len_y2 = len_y2,
+#         self.len_z1 = len_z1, self.len_z2 = len_z2
+#
+#     def mesh(self):
+#         # Initialise the location of the objects origin.
+#         if self.loc_x is None:
+#             self.loc_x = 0.0
+#
+#         if self.loc_y is None:
+#             self.loc_y = 0.0
+#         if self.loc_z is None:
+#             self.loc_z = 0.0
+#
+#         # Set default size if none is provided.
+#         if self.len_x is None:
+#             self.len_x = 1.0
+#         if self.len_y is None:
+#             self.len_y = 1.0
+#         if self.len_z is None:
+#             self.len_z = 1.0
+#
+#         # Calculate objects dimensions, based on size and location.
+#         x1 = self.len_x1 + self.loc_x
+#         x2 = self.len_x2 + self.loc_x
+#         y1 = self.len_y1 + self.loc_y
+#         y2 = self.len_y2 + self.loc_y
+#         z1 = self.len_z1 + self.loc_z
+#         z2 = self.len_z2 + self.loc_z
+#
+#         bx1 = BoxShape(x1, x2, y1, y2, z1, z2)
+#         m = '&MESH IJK={},{},{}, {}'.format(10, 10, 10, bx1)
+#         print(m)
 
 
 #################
@@ -172,6 +172,135 @@ class FDSDomain:
 
 
 #################
+# FDS MESH CLASS
+class FDSMESH:
+    """
+
+    """
+    mesh_temp = {'init': "&MESH ID = '{}'",
+                 'color': "COLOR = '{}'",
+                 'cylindrical': "CYLINDRICAL = .{}.",
+                 'evacuation': "EVACUATION = .{}.",
+                 'evac_humans': "EVAC_HUMANS = .{}.",
+                 'evac_z_offset': "EVAC_Z_OFFSET = .{}.",
+                 'ijk': "IJK = {}",
+                 'level': "LEVEL = {}",
+                 'mpi_process': "MPI_PROCESS = {}",
+                 'n_threads': "N_THREADS = {}",
+                 'mult_id': "MULT_ID = {}",
+                 'periodic_mesh_ids': "PERIODIC_MESH_IDS = {}",
+                 'rgb': "RGB = {}",
+                 'xb': "XB(6) = {}"}
+
+    def __init__(self, init, ijk=None, color=None, cylindrical=None,
+                 evacuation=None, evac_humans=None, evac_z_offset=None,
+                 level=None, mpi_process=None, n_threads=None,
+                 mult_id=None, periodic_mesh_ids=None, rgb=None, xb=None,
+                 x=0.0, y=0.0, z=0.0,
+                 len_x=1.0, len_y=1.0, len_z=1.0,
+                 loc_x=0.0, loc_y=0.0, loc_z=0.0,
+                 digits=None):
+
+        self.init = init
+        self.ijk = ijk
+        self.color = color
+        self.cylindrical = cylindrical
+        self.evacuation = evacuation
+        self.evac_humans = evac_humans
+        self.evac_z_offset = evac_z_offset
+        self.level = level
+        self.mpi_process = mpi_process
+        self.n_threads = n_threads
+        self.mult_id = mult_id
+        self.periodic_mesh_ids = periodic_mesh_ids
+        self.rgb = rgb
+        self.xb = xb
+
+        self.x = x
+        self.y = y
+        self.z = z
+        self.len_x = len_x
+        self.len_y = len_y
+        self.len_z = len_z
+        self.loc_x = loc_x
+        self.loc_y = loc_y
+        self.loc_z = loc_z
+        self.digits = digits
+
+        self.param_base = [['init', self.init],
+                           ['ijk', self.ijk],
+                           ['color', self.color],
+                           ['cylindrical', self.cylindrical],
+                           ['evacuation', self.evacuation],
+                           ['evac_humans', self.evac_humans],
+                           ['evac_z_offset', self.evac_z_offset],
+                           ['level', self.level],
+                           ['mpi_process', self.mpi_process],
+                           ['n_threads', self.n_threads],
+                           ['mult_id', self.mult_id],
+                           ['periodic_mesh_ids', self.periodic_mesh_ids],
+                           ['rgb', self.rgb],
+                           ['xb', self.xb]]
+
+        self.box = [['x', self.x],
+                    ['y', self.y],
+                    ['z', self.z],
+                    ['len_x', self.len_x],
+                    ['len_y', self.len_y],
+                    ['len_z', self.len_z],
+                    ['loc_x', self.loc_x],
+                    ['loc_y', self.loc_y],
+                    ['loc_z', self.loc_z]]
+
+    def compile_mesh(self, show=False):
+        mesh_lines = []
+
+        # Initialise the mesh.
+        par = self.param_base[0]
+        new_par = self.mesh_temp[par[0]].format(par[1])
+        mesh_lines.append(new_par + ',')
+
+        # Define the mesh resolution.
+        new_ijk = "{}, {}, {}"
+        par = self.param_base[1]
+        nijk = new_ijk.format(par[1][0],
+                              par[1][1],
+                              par[1][2])
+
+        new_par = self.mesh_temp[par[0]].format(nijk)
+        mesh_lines.append('      ' + new_par + ',')
+
+        # Define size and location of the mesh.
+        mesh_dim = FDSBasicShapes(self.x,
+                                  self.y,
+                                  self.z,
+                                  self.len_x,
+                                  self.len_y,
+                                  self.len_z,
+                                  self.loc_x,
+                                  self.loc_y,
+                                  self.loc_z,
+                                  self.digits)
+        new_par = mesh_dim.compile_box()
+        mesh_lines.append('      ' + new_par + ',')
+
+        # Iterate over the remaining parameters of the
+        # mesh class.
+        for par in self.param_base[2:]:
+            if par[1] is not None:
+                new_par = self.mesh_temp[par[0]].format(par[1])
+                mesh_lines.append('      ' + new_par + ',')
+
+        mesh_lines[-1] = mesh_lines[-1][:-1] + ' /\n'
+
+        if show is True:
+            for line in mesh_lines:
+                print(line)
+
+        return mesh_lines
+
+
+#################
 # Basic shapes
 class FDSBasicShapes:
     """
@@ -187,9 +316,9 @@ class FDSBasicShapes:
                  digits=2, lead_chars=5):
         """
 
-        :param x:
-        :param y:
-        :param z:
+        :param x: Origin of the box, x coordinate.
+        :param y: Origin of the box, y coordinate.
+        :param z: Origin of the box, z coordinate.
         :param len_x:
         :param len_y:
         :param len_z:
@@ -225,13 +354,12 @@ class FDSBasicShapes:
             self.lead_chars + self.digits) + "}"
 
         # Define box size and location.
-        x1 = self.x + self.loc_x
-        y1 = self.y + self.loc_y
-        z1 = self.z + self.loc_z
-        x2 = self.len_x + self.loc_x
-        y2 = self.len_y + self.loc_y
-        z2 = self.len_z + self.loc_z
-        # coords = [x1, y1, z1, x2, y2, z2]
+        x1 = self.x
+        y1 = self.y
+        z1 = self.z
+        x2 = self.x + self.len_x
+        y2 = self.y + self.len_y
+        z2 = self.z + self.len_z
         coords = [x1, x2, y1, y2, z1, z2]
 
         #
