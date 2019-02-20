@@ -44,7 +44,7 @@ def fire_duration(comb_mass_pua, hoc, hrrpua_avg):
     return duration
 
 
-def horizontal_burning_rate(vertical_distance, burning_length,
+def horizontal_burning_area(vertical_distance, burning_length,
                             spread_angle=35):
     """
     Formula 9-1 from CHRISTIFIRE Phase 1 (NUREG/CR-7010, Vol. 1), p. 147
@@ -76,6 +76,5 @@ def tray_igniton_time(distance):
 
 def total_err(time):
     pass
-
 
 
