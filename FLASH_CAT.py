@@ -97,3 +97,19 @@ def average_hrrpua(tp_fraction, tp_hrrpua=250, ts_hrrpua=150):
     ts_fraction = 1 - tp_fraction
     avg_hrrpua = (ts_fraction * ts_hrrpua) + (tp_fraction * tp_hrrpua)
     return avg_hrrpua
+
+
+def average_cable_mass(plastic_fraction, linear_cable_mass):
+    """
+    Calculates the averaged cable mass per unit length.
+
+    :param plastic_fraction: Fraction of plastic material per unit length of
+        the cable.
+    :param linear_cable_mass: Mass of the whole cable per unit length, in kg/m.
+
+    :return: Average value of cable mass, in kg/m.
+    """
+    
+    intermediate = np.sum(plastic_fraction * linear_cable_mass)
+    avg_mass = intermediate/np.sum(linear_cable_mass)
+    return avg_mass
