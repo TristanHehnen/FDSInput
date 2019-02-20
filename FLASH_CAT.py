@@ -2,7 +2,7 @@ import numpy as np
 
 
 def combustible_mass_pua(n_cables, combustible_fraction, residue_yield,
-                         mass_length=1.0, tray_width=0.45):
+                         mass_length=0.18056, tray_width=0.45):
     """
     Formula 9-3 from CHRISTIFIRE Phase 1 (NUREG/CR-7010, Vol. 1), p. 148
     Calculates the combustible mass per unit area of a cable tray.
@@ -11,7 +11,7 @@ def combustible_mass_pua(n_cables, combustible_fraction, residue_yield,
     :param combustible_fraction: Fraction of combustible (non-metallic)
         material per cable, dimensionless.
     :param residue_yield: Amount of residue left, dimensionless.
-    :param mass_length: Mass per length of cable, in g/m.
+    :param mass_length: Mass per length of cable, in kg/m. Default is cable 219.
     :param tray_width: Width of the tray, in m.
 
     :return: Combustible mass per unit area per tray, in g/m^2.
@@ -63,7 +63,7 @@ def horizontal_burning_area(vertical_distance, burning_length,
         the tray. The angle of 35° is based on observations of experiments
         documented in NUREG/CR-6850.
 
-    :return:
+    :return: New length of burning surface.
     """
 
     new_length = burning_length + 2 * vertical_distance * np.tan(spread_angle)
@@ -104,12 +104,13 @@ def average_cable_mass(plastic_fraction, linear_cable_mass):
     Calculates the averaged cable mass per unit length.
 
     :param plastic_fraction: Fraction of plastic material per unit length of
-        the cable.
-    :param linear_cable_mass: Mass of the whole cable per unit length, in kg/m.
+        the cable. Expected to be an numpy array.
+    :param linear_cable_mass: Mass of the whole cable per unit length,
+        in kg/m. Expected to be an numpy array.
 
     :return: Average value of cable mass, in kg/m.
     """
-    
+
     intermediate = np.sum(plastic_fraction * linear_cable_mass)
     avg_mass = intermediate/np.sum(linear_cable_mass)
     return avg_mass
