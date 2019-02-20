@@ -78,3 +78,22 @@ def total_err(time):
     pass
 
 
+def average_hrrpua(tp_fraction, tp_hrrpua=250, ts_hrrpua=150):
+    """
+    This calculates the average heat release rates per unit area for cable
+    trays with mixed cables. Cables are assumed to be split between
+    "thermoset" and "thermoplastic" cables with hrrpua values of 250 kW/m2
+    and 150 kW/m2 respectively. Values are suggested by NUREG/CR-6850.
+
+    :param tp_fraction: Fraction of thermoplastic cables, e.g. 0.3.
+    :param tp_hrrpua: Heat release rate per unit area from NUREG/CR-6850 for
+        thermoplastic cables: 250 kW/m2
+    :param ts_hrrpua: Heat release rate per unit area from NUREG/CR-6850 for
+        thermoset cables: 150 kW/m2
+
+    :return: Averaged heat release rate per unit area.
+    """
+
+    ts_fraction = 1 - tp_fraction
+    avg_hrrpua = (ts_fraction * ts_hrrpua) + (tp_fraction * tp_hrrpua)
+    return avg_hrrpua
