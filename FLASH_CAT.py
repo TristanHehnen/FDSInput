@@ -114,3 +114,22 @@ def average_cable_mass(plastic_fraction, linear_cable_mass):
     intermediate = np.sum(plastic_fraction * linear_cable_mass)
     avg_mass = intermediate/np.sum(linear_cable_mass)
     return avg_mass
+
+
+def idealised_hrrpua(peak_hrr, duration):
+    """
+
+
+    :param peak_hrr: Heat release rate value of the input data which is used
+        as a constant value.
+    :param duration: Duration of the test or time series.
+
+    :return: List of lists, containing four data points forming a trapezoid
+        as a heat release ramp.
+    """
+
+    ramp = duration/6
+    time = [0, ramp, duration - ramp, duration]
+    hrr = [0, peak_hrr, peak_hrr, 0]
+    data_series = [time, hrr]
+    return data_series
