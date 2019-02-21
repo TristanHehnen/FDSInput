@@ -118,7 +118,8 @@ def average_cable_mass(plastic_fraction, linear_cable_mass):
 
 def idealised_hrrpua(peak_hrr, duration):
     """
-
+    Creates a simple hrrpua profile as a trapezoid, consisting of four data
+    points.
 
     :param peak_hrr: Heat release rate value of the input data which is used
         as a constant value.
@@ -133,3 +134,32 @@ def idealised_hrrpua(peak_hrr, duration):
     hrr = [0, peak_hrr, peak_hrr, 0]
     data_series = [time, hrr]
     return data_series
+
+
+def delta_t(cell_size, spread_rate=3.2, hours=True):
+    """
+    Calculates the time the fire spreads along a linear fuel bed,
+    like cables, in which it would traverse a cell width of the fluid cells.
+    This is used to determine when the VENT in the adjacent cells is to be
+    activated, due to fire spread.
+
+    :param spread_rate: Time in which the fire propagates linearly over a
+        unit length, in m/h. Default is 3.2 m/h for thermoplastic cable from
+        findings of NUREG/CR-6850.
+    :param cell_size: Cell size, or edge length, of cube-shaped CFD cells,
+        e.g. for FDS, in millimeter.
+    :param hours: Flag if the spread rate is provided per hour, else seconds
+        are assumed.
+
+    :return: Time needed to traverse a distance of one cell size,
+    in seconds.
+    """
+
+    if hours is True:
+        factor = 3600
+    else:
+        factor = 1
+
+    delta = cell_size / spread_rate * factor
+
+    return delta
