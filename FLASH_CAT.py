@@ -70,20 +70,33 @@ def horizontal_burning_area(vertical_distance, burning_length,
     return new_length
 
 
-def tray_igniton_time(distance):
-    pass
+def igniton_time(location, burning_length, spread_rate, tray_ignition):
+    """
+    Calculates the ignition time of a given location of the tray. The
+    `tray_ignition` is the time when the tray ignites first.
+
+    :param location: A given location of the tray.
+    :param burning_length: Length of the already burning part of the tray.
+    :param spread_rate: Rate at which the fire propagates along the tray.
+    :param tray_ignition: Time at which the tray ignites.
+
+    :return: Time at which a given part of the tray ignites.
+    """
+
+    ignition_time = tray_ignition + ((location - burning_length/2)/spread_rate)
+    return ignition_time
 
 
 def total_err(time):
-    pass
+    return
 
 
 def average_hrrpua(tp_fraction, tp_hrrpua=250, ts_hrrpua=150):
     """
     This calculates the average heat release rates per unit area for cable
     trays with mixed cables. Cables are assumed to be split between
-    "thermoset" and "thermoplastic" cables with hrrpua values of 250 kW/m2
-    and 150 kW/m2 respectively. Values are suggested by NUREG/CR-6850.
+    "thermoset" (ts) and "thermoplastic" (tp) cables with hrrpua values of
+    250 kW/m2 and 150 kW/m2 respectively. Values are suggested by NUREG/CR-6850.
 
     :param tp_fraction: Fraction of thermoplastic cables, e.g. 0.3.
     :param tp_hrrpua: Heat release rate per unit area from NUREG/CR-6850 for
